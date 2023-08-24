@@ -1,30 +1,45 @@
 package patrickdev01.bank;
-
 import java.util.List;
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args){
-        Bank santander = new Bank("0001");
+        Bank bank = new Bank(0, "");
+        Account account = new Account();
         Scanner scanner = new Scanner(System.in);
+        Log log = new Log();
+        bank.setBanks();
 
-        // C = criar conta
-        // E = sair (exit)
-
-        // Depositar, Sacar, Sair
         while (true){
-            System.out.println("O que deseja fazer? C - Criar conta | E - Sair do programa");
-            String op = scanner.nextLine().toString().toUpperCase();
+            System.out.println("O que deseja fazer? C - Criar conta | E - Entrar na minha conta | X - Sair do programa");
+            String op = scanner.nextLine().toUpperCase();
+            log.breakLine();
 
+            List<Bank> availableBanks = bank.getBanks();
             if(op.equals("C")){
-                System.out.print("Digite seu Nome: ");
+                for (Bank b: availableBanks){
+                    System.out.println("" + b.cod_bank + " - " + b.bankname);
+                }
+                log.breakLine();
+                System.out.println("Qual banco deseja criar sua conta?");
+                int bank_id = scanner.nextInt();
+                System.out.println("Digite seu Nome Completo: ");
                 String name = scanner.nextLine();
-                Account account = santander.generateAccount(name);
-                santander.insertAccount(account);
-
-                operateAccount(account);
+                System.out.println("Crie uma senha de 8 digitos: ");
+                String password = scanner.nextLine();
+                account.createNewAccount(name, password, bank_id);
             }
-            else if (op.equals("E")){
+
+            if(op.equals("E")){
+                System.out.print("Digite sua Agência: ");
+                String ag = scanner.nextLine();
+                System.out.print("Digite o n° da conta: ");
+                String cc = scanner.nextLine();
+                System.out.print("Digite a senha da conta: ");
+                String password = scanner.nextLine();
+            }
+
+            else if (op.equals("X")){
                 break;
             }
 
@@ -32,15 +47,6 @@ public class App {
                 System.out.println("Comando inválido! tente novamente");
             }
         }
-
-        List<Account> accountList = santander.getAccounts();
-
-        // Nomenclatura para fazer loops dentro de objetos
-        for (Account cc: accountList){
-            System.out.println(cc);
-        }
-
-        santander.outputTotal();
     }
 
     static void operateAccount(Account account){
@@ -48,7 +54,7 @@ public class App {
 
         while(true) {
             System.out.println("Qual o valor deseja fazer? D - Depósito | S - Saque | E - Sair da conta");
-            String op = scanner.nextLine().toString().toUpperCase();
+            String op = scanner.nextLine().toUpperCase();
 
             if (op.equals("D")) {
                 System.out.println("Qual o valor deseja depositar?");

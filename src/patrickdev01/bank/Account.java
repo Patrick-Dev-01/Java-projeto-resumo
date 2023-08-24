@@ -1,27 +1,45 @@
 package patrickdev01.bank;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Random;
+
 public class Account {
-    private static final int MAX_LENGTH = 12;
     private String ag;
     private String cc;
     private String name;
+    private Database database = new Database();
     private double balance;
-    private Log log;
+    private Log log = new Log();;
 
-    public Account(String ag, String cc, String name){
-        this.ag = ag;
-        this.cc = cc;
-        setName(name);
-        log = new Log();
+    public Account(){
     }
 
-    public void setName(String name){
-        if(name.length() > MAX_LENGTH){
-            this.name = name.substring(0, MAX_LENGTH);
+    public void createNewAccount(String name, String password, int cod_bank){
+        Connection connection = database.connect();
+        Random random = new Random();
+        String ag = "" + random.nextInt(9999);
+        String cc = "" + random.nextInt(99999);
+
+        String strSQL = String.format("INSERT INTO accounts (ag, cc, username, password, balance, Cod_bank) VALUES (%s, %s, %s, %s" +
+                ", %d, %d);", ag, cc, name, password, 0, cod_bank);
+        try{
+            PreparedStatement stament = connection.prepareStatement(strSQL);
+            stament.executeUpdate();
+
+            System.out.println("Conta criada com sucesso!");
+            log.breakLine();
+            System.out.println("Agência: " + ag + " | Conta: " + cc);
+            log.breakLine();
+
+            connection.close();
         }
 
-        else{
-            this.name = name;
+        catch(SQLException ex){
+            System.out.println("An Error ocurred while create a new account: " + ex);
+            System.out.println(strSQL);
+
         }
     }
 
