@@ -1,66 +1,111 @@
 package patrickdev01.bank;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Random;
 
 public class Account {
+    private int id_account;
     private String ag;
     private String cc;
     private String name;
-    private Database database = new Database();
+    private String bank;
     private double balance;
-    private Log log = new Log();;
-
-    public Account(){
+    private Database database = new Database();
+    private Log log = new Log();
+//String ag, String cc, String name, String bank, double balance
+    public Account(int id_account){
+        this.id_account = id_account;
+        /*this.ag = ag;
+        this.cc = cc;
+        this.name = name;
+        this.bank = bank;
+        this.balance = balance;*/
     }
 
-    public void createNewAccount(String name, String password, int cod_bank){
+    public Account(){}
+
+    public boolean drawOut(int value){
+        int currentBalance = getBalance();
         Connection connection = database.connect();
-        Random random = new Random();
-        String ag = "" + random.nextInt(9999);
-        String cc = "" + random.nextInt(99999);
+        ResultSet rs;
+        boolean isDrawedOut = false;
 
-        String strSQL = String.format("INSERT INTO accounts (ag, cc, username, password, balance, Cod_bank) VALUES (%s, %s, %s, %s" +
-                ", %d, %d);", ag, cc, name, password, 0, cod_bank);
+        if(currentBalance < value){
+            log.out("Você não possui saldo suficiente para sacar | Saldo R$" + currentBalance +
+                    " valor do saque R$" + value);
+
+            isDrawedOut = false;
+        }
+
+        log.separator();
+
         try{
-            PreparedStatement stament = connection.prepareStatement(strSQL);
-            stament.executeUpdate();
+            String updateBalanceSQL = String.format("UPDATE accounts set balance = %d WHERE id_account = %d;"
+                    ,currentBalance - value, this.id_account);
 
-            System.out.println("Conta criada com sucesso!");
-            log.breakLine();
-            System.out.println("Agência: " + ag + " | Conta: " + cc);
-            log.breakLine();
+            PreparedStatement statement = connection.prepareStatement(updateBalanceSQL);
+            statement.executeUpdate();
+
+            log.out("SAQUE - R$" + value + " | Novo saldo R$" + (currentBalance - value));
+
+            connection.close();
+
+            isDrawedOut = true;
+        }
+
+        catch (SQLException ex){
+            log.out("Error ocurred while cash out: " + ex);
+        }
+
+        log.separator();
+
+        return isDrawedOut;
+    }
+
+    public void deposit(int value){
+        int currentBalance = getBalance();
+        Connection connection = database.connect();
+
+        try{
+            String updateBalanceSQL = String.format("UPDATE accounts set balance = %d WHERE id_account = %d;"
+                    ,currentBalance + value, this.id_account);
+            PreparedStatement statement = connection.prepareStatement(updateBalanceSQL);
+            statement.executeUpdate(updateBalanceSQL);
+
+            log.separator();
+            log.out("Deposito feito com sucesso!");
+            log.separator();
 
             connection.close();
         }
 
-        catch(SQLException ex){
-            System.out.println("An Error ocurred while create a new account: " + ex);
-            System.out.println(strSQL);
-
+        catch (SQLException ex){
+            log.out("Error while deposit new balance: " + ex);
         }
     }
+    public int getBalance(){
+        Connection connection = database.connect();
+        ResultSet rs;
+        int balance = 0;
 
-    public boolean drawOut(double value){
-        if(balance < value){
-            log.out("SAQUE - R$" + value + " Seu saldo atual é de R$" + balance);
-            return false;
+        try{
+            String strSQL = String.format("SELECT balance FROM accounts WHERE id_account = %d;", this.id_account);
+
+            PreparedStatement statement = connection.prepareStatement(strSQL);
+            rs = statement.executeQuery();
+
+            if(rs.next()){
+                balance = rs.getInt(1);
+            }
+
+            connection.close();
         }
 
-        balance -= value;
-        log.out("SAQUE - R$" + value + " Seu saldo atual é de R$" + balance);
-        return true;
-    }
+        catch (SQLException ex){
+            log.out("Error while get current balance: " + ex);
+        }
 
-    public void deposit(double value){
-        balance += value;
-        log.out("DEPOSITO - R$" + value + " Sua conta agora é de R$" + balance);
-    }
-
-    public double getBalance(){
-        return  balance;
+        return balance;
     }
 
     @Override

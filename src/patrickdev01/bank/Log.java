@@ -6,7 +6,7 @@ public class Log {
         System.out.println(message);
     }
 
-    public void breakLine(){
+    public void separator(){
         System.out.println("-------------------------------------");
     }
 }
