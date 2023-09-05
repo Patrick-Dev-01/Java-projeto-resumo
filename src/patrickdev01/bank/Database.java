@@ -10,9 +10,9 @@ public class Database {
     String password;
 
     public Database(){
-        this.url = "jdbc:mysql://localhost:3306/Bank";
-        this.user = "root";
-        this.password = "";
+        this.url = System.getenv("URL");
+        this.user = System.getenv("USER");
+        this.password = System.getenv("PASSWORD");
     }
     public Connection connect(){
         Connection connection = null;

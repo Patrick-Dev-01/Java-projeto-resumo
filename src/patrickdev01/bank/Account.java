@@ -1,7 +1,7 @@
 package patrickdev01.bank;
 
 import java.sql.*;
-import java.util.Random;
+import java.util.List;
 
 public class Account {
     private int id_account;
@@ -12,14 +12,18 @@ public class Account {
     private double balance;
     private Database database = new Database();
     private Log log = new Log();
-//String ag, String cc, String name, String bank, double balance
-    public Account(int id_account){
+    //String ag, String cc, String name, String bank, double balance
+    public Account(int id_account, String ag, String cc, String name, double balance, String bank){
         this.id_account = id_account;
-        /*this.ag = ag;
+        this.ag = ag;
         this.cc = cc;
         this.name = name;
         this.bank = bank;
-        this.balance = balance;*/
+        this.balance = balance;
+    }
+
+    public Account(int id_account){
+        this.id_account = id_account;
     }
 
     public Account(){}
@@ -27,7 +31,6 @@ public class Account {
     public boolean drawOut(int value){
         int currentBalance = getBalance();
         Connection connection = database.connect();
-        ResultSet rs;
         boolean isDrawedOut = false;
 
         if(currentBalance < value){
@@ -107,6 +110,51 @@ public class Account {
 
         return balance;
     }
+
+    public void transfer(String ag, String cc, int value){
+        Connection connection = database.connect();
+        int issuerCurrentBalance = getBalance();
+        ResultSet rs;
+
+        if(issuerCurrentBalance < value){
+            log.out("Valor de transferência menor que o saldo atual");
+        }
+
+        else {
+            try{
+                String receiverBalanceSQL = String.format("SELECT id_account, balance FROM accounts WHERE ag = '%s' AND " +
+                        "cc = '%s';", ag, cc);
+                Statement statement = connection.createStatement();
+
+                rs = statement.executeQuery(receiverBalanceSQL);
+
+                if(rs.next()){
+                    String updateReceiverBalanceSQL = String.format("UPDATE accounts set balance = %d " +
+                            "WHERE id_account = %d;", rs.getInt(2) + value, rs.getInt(1));
+                    String updateIssuerBalanceSQL = String.format("UPDATE accounts set balance = %d WHERE id_account = %d;"
+                            ,issuerCurrentBalance - value, this.id_account);
+
+                    statement.addBatch(updateReceiverBalanceSQL);
+                    statement.addBatch(updateIssuerBalanceSQL);
+
+                    statement.executeBatch();
+
+                    log.out("Transferência feita com sucesso!");
+                    connection.close();
+                }
+
+                else {
+                    log.out("Não foi possivel encontrar a conta destinada, verifique se você digitou os dados " +
+                            "conta corretamente");
+                }
+            }
+
+            catch (SQLException ex){
+                log.out("Error ocurred while transfer: " + ex);
+            }
+        }
+    }
+
 
     @Override
     public String toString(){

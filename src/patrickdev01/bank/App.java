@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class App {
     public static void main(String[] args){
-        // 9854 - 72944
+        // 9854 - 72944 | 804 - 64999
         Bank bank = new Bank(0, "");
         Log log = new Log();
 
@@ -12,7 +12,8 @@ public class App {
             Scanner scanner = new Scanner(System.in);
             bank.setBanks();
 
-            System.out.println("O que deseja fazer? C - Criar conta | E - Entrar na minha conta | X - Sair do programa");
+            System.out.println("O que deseja fazer? C - Criar conta | E - Entrar na minha conta | " +
+                    "L - Listar contas | X - Sair do programa");
             String op = scanner.nextLine().toUpperCase();
             log.separator();
 
@@ -31,7 +32,7 @@ public class App {
                 bank.createNewAccount(name, password, bank_id);
             }
 
-            if(op.equals("E")){
+            else if(op.equals("E")){
                 System.out.print("Digite sua Agência: ");
                 String ag = scanner.nextLine();
                 System.out.print("Digite o n° da conta: ");
@@ -46,6 +47,16 @@ public class App {
                 }
             }
 
+            else if(op.equals("L")){
+                bank.setAccounts();
+                List<Account> accounts = bank.getAccounts();
+
+                log.out("" + accounts);
+                for (Account acc: accounts){
+
+                }
+            }
+
             else if (op.equals("X")){
                 break;
             }
@@ -57,7 +68,8 @@ public class App {
         Log log = new Log();
 
         while(true) {
-            System.out.println("O que deseja fazer? B - Saldo | D - Depósito | S - Saque | E - Sair da conta");
+            System.out.println("O que deseja fazer? B - Saldo | D - Depósito | S - Saque | T - Transferir | " +
+                    "E - Sair da conta");
             String op = scanner.nextLine().toUpperCase();
 
             if (op.equals("D")) {
@@ -75,6 +87,18 @@ public class App {
                 System.out.println("Qual o valor deseja sacar?");
                 int value = scanner.nextInt();
                 account.drawOut(value);
+            }
+
+            else if(op.equals("T")){
+                System.out.print("Digite a Agência: ");
+                String ag = scanner.nextLine();
+                System.out.print("Digite o n° da conta: ");
+                String cc = scanner.nextLine();
+                System.out.print("Valor: ");
+                int transferValue = Integer.parseInt(scanner.nextLine());
+                log.separator();
+                account.transfer(ag, cc, transferValue);
+                log.separator();
             }
 
             else if(op.equals("E")){

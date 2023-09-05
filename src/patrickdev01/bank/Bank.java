@@ -1,6 +1,5 @@
 package patrickdev01.bank;
 
-import javax.swing.text.html.parser.Parser;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,8 @@ public class Bank {
     private List<Bank> banks;
     private Database database = new Database();
     private Log log = new Log();
-
+    private List<Account> accounts = new ArrayList<>();
+    public Bank(){}
     public Bank(int cod_bank, String bankname){
         this.cod_bank = cod_bank;
         this.bankname = bankname;
@@ -114,6 +114,32 @@ public class Bank {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public void setAccounts(){
+        Connection connection = database.connect();
+        ResultSet rs;
+
+        try{
+            String strSQL = "SELECT acc.id_account, acc.ag, acc.cc, acc.username, acc.balance, b.bankname " +
+                    "FROM accounts as acc join banks as b WHERE acc.Cod_bank = b.cod_bank;";
+
+            PreparedStatement statement = connection.prepareStatement(strSQL);
+            rs = statement.executeQuery();
+
+            while (rs.next()){
+                accounts.add(new Account(rs.getInt(1), rs.getString(2), rs.getString(3),
+                        rs.getString(4), rs.getDouble(5), rs.getString(6)));
+            }
+        }
+
+        catch(SQLException ex){
+            log.out("Error while get accounts: " + ex);
+        }
+    }
+
+    public List<Account> getAccounts(){
+        return this.accounts;
     }
 
     public List<Bank> getBanks(){
